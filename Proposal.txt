@@ -1,0 +1,26 @@
+Alexandra Golub, agolub
+Daniel Cabrera, dcabrera
+March 26, 2014
+CIS 552
+HW7: Project Proposal
+1. Partner: Daniel Cabrera
+2. Topic: Bioinformatics in Haskell – 23 and Haskell (www.23andme.com) 
+3. Write a 2-3 page document including:
+o A one-paragraph description of the overall goal of your project.
+With 23 and Haskell, we want to create an application that utilizes and extends Haskell’s bioinformatics library (http://www.biohaskell.org/Libraries) with several main features: 
+1. Align DNA data from a genome-sequencing run
+2. Compare sequenced genome to a reference genome
+3. Identify interesting phenotypic qualities
+o A typical use case i.e., an example showing how your program/library will behave under some typical usage scenario. (Include two or three different use cases if this makes sense.)
+The user will have a set of short sequence (DNA) reads to be aligned. He/she will load these sequences into 23 and Haskell, and select a reference genome to align to. Our application will return a new FASTA file containing the new aligned genome (from user’s sequencing data). Additionally, our application will produce a .txt file containing a list of interesting genes (eye color, risk of breast cancer, etc.), normal genotype, sequenced genotype, and expected phenotype – similar to the popular website 23 and Me. 
+o A sketch of how you plan to break the problem down into loosely coupled modular components.
+* Reading in reference human genome data and index (5 hrs)
+* Reading in and parsing sequence (DNA) data (5 hrs)
+* Use the Needleman-Wunsch (15 hrs) (http://en.wikipedia.org/wiki/Needleman%E2%80%93Wunsch_algorithm) and Smith-Waterman (http://en.wikipedia.org/wiki/Smith%E2%80%93Waterman_algorithm) algorithms to calculate sequence alignment scores
+* Use score to align sequences that were read in, and use them to generate a new genome (30 hrs)
+* Parse that genome for interesting genes (2-3) that match certain characteristics (eye color, hair type, etc) (20 hrs)
+* Output (5 hrs): 
+* Generated genome
+* Sequence of interesting genes with marked mutations
+* Corresponding phenotypes to genes
+
