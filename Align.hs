@@ -5,14 +5,10 @@
 
 module Align where
 
-import Data.Set
 import Bio.Sequence
-import Bio.Alignment.SAlign
 import TestData
 import Test.HUnit
 import NeedlemanWunsch
-import Data.Array
-
 
 readLength :: Int
 readLength = 5
@@ -61,8 +57,8 @@ test2 = align (toStr seq1) (toStr refSeqShort) ~?= ["AGCTG", "GTCGATGGATCGACTAGG
 
 --Call "alignment" with "sequences" && "indexer refSeq"
 alignment :: [SeqData] -> [(SeqData, Int)] -> [String]
-alignment (x:xs) (y:ys) = align (toStr x) (toStr fst $ y) ++ alignment xs ys
-alignment _      = ["No sequences to align"]
+alignment (x:xs) (y:ys) = align (toStr x) (toStr $ fst y) ++ alignment xs ys
+alignment _ _           = ["No sequences to align"]
 
 --pairs each alignment with the corresponding gemonic index
 alignScores :: [SeqData] -> [(SeqData, Int)]

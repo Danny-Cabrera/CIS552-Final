@@ -25,10 +25,6 @@
 
 \maketitle
 
-\begin{code}
-module NeedlemanWunsch where
-\end{code}
-
 The purpose of this Literate Haskell program is to implement a
 function that does global sequence alignment using Needleman/Wunsch
 techniques.\footnote{More about these techniques, graphics helpful
@@ -51,7 +47,7 @@ referential transparency and (to an extent) lazy evaluation.
 \setlength{\mathindent}{2.5em}
 
 \begin{code}
-import Data.Array
+import Data.Array-0.4.0.1
 \end{code}
 
 |align| is the function that wraps all the functions below and calls
