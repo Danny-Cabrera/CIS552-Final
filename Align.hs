@@ -1,7 +1,7 @@
-
+{-# OPTIONS -Wall -fwarn-tabs -fno-warn-type-defaults -XDataKinds #-}
 --implemenation of Needleman-Wunsch algorithm for global alignment
 
-
+-- use flags for ghci: -package haskell98-2.0.0.2 -hide-packagebase
 
 module Align where
 
@@ -10,7 +10,7 @@ import Bio.Sequence
 import Bio.Alignment.SAlign
 import TestData
 import Test.HUnit
-import Main
+import NeedlemanWunsch
 import Data.Array
 
 
@@ -21,8 +21,8 @@ readLength = 5
 --Make sequence data of length multiple of readLength
 padSeq :: SeqData -> SeqData
 padSeq s = let q = lengthSeq s `mod` readLength in
-			   if q == 0 then s else
-               s `appendSeq` (buildSeq $ readLength - q)  
+                   if q == 0 then s else
+                    s `appendSeq` (buildSeq $ readLength - q)  
 
 appendSeq :: SeqData -> SeqData -> SeqData
 appendSeq s1 s2 = fromStr $ toStr s1 ++ toStr s2
@@ -38,8 +38,8 @@ indexer :: SeqData -> [(SeqData, Int)]
 indexer s = indexGenome (padSeq s) [] 0
 
 indexGenome :: SeqData -> [(SeqData, Int)] -> Int -> [(SeqData, Int)] 
-indexGenome seq l index = if lengthSeq seq == 0 then l else
-							indexGenome (dropSeq readLength seq) ((takeSeq readLength seq, index): l) (index + 1) 
+indexGenome seqs l index = if lengthSeq seqs == 0 then l else
+                          indexGenome (dropSeq readLength seqs) ((takeSeq readLength seqs, index): l) (index + 1) 
 
 
 dropSeq :: Int -> SeqData -> SeqData
@@ -56,5 +56,15 @@ splitRef :: [(SeqData, Int)]
 splitRef = indexGenome refSeq [] 0
 
 --Needleman Wunsch Algorithm for scoring
-show align seq1 refSeqShort
+test2 :: Test
+test2 = align (toStr seq1) (toStr refSeqShort) ~?= ["AGCTG", "GTCGATGGATCGACTAGGCTAGCAT"]
+
+--Call "alignment" with "sequences" && "indexer refSeq"
+alignment :: [SeqData] -> [(SeqData, Int)] -> [String]
+alignment (x:xs) (y:ys) = align (toStr x) (toStr fst $ y) ++ alignment xs ys
+alignment _      = ["No sequences to align"]
+
+--pairs each alignment with the corresponding gemonic index
+alignScores :: [SeqData] -> [(SeqData, Int)]
+alignScores = undefined
 
