@@ -5,6 +5,7 @@ module TestData where
 
 import Bio.Sequence
 
+--Reference genome data
 
 refSeq :: SeqData
 refSeq = fromStr "ACTGGTCAAGTTGGCCAATTGGCCAGATCGATCGATCTTAAGGTGTGTATAGTGATGGAAGACTCGAGGGTCTTTTAGCTAGCTAGCTTCAGCT"
@@ -12,6 +13,7 @@ refSeq = fromStr "ACTGGTCAAGTTGGCCAATTGGCCAGATCGATCGATCTTAAGGTGTGTATAGTGATGGAAGA
 refSeqShort :: SeqData
 refSeqShort = fromStr "ACTGGTCAAGTTGGC"
 
+--Individual DNA "reads"
 
 seq1 :: SeqData
 seq1 = fromStr "ACTGG"
@@ -53,7 +55,6 @@ seq19 :: SeqData
 seq19 = fromStr "CTCGA"
 seq20 :: SeqData
 seq20 = fromStr "TTCA"
-
 
 
 sequences :: [SeqData]
