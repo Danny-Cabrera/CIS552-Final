@@ -55,12 +55,17 @@ splitRef = indexGenome refSeq [] 0
 test2 :: Test
 test2 = align (toStr seq1) (toStr refSeqShort) ~?= ["AGCTG", "GTCGATGGATCGACTAGGCTAGCAT"]
 
---Call "alignment" with "sequences" && "indexer refSeq"
-alignment :: [SeqData] -> [(SeqData, Int)] -> [String]
-alignment (x:xs) (y:ys) = align (toStr x) (toStr $ fst y) ++ alignment xs ys
-alignment _ _           = ["No sequences to align"]
+--Call: alignment sequences (indexer refSeq)
+--pairs each alignment with the corresponding genomic index
+alignment :: [SeqData] -> [(SeqData, Int)] -> [([String], Int)]
+alignment (x:xs) (y:ys) = [(align (toStr x) (toStr $ fst y), snd y)] ++ alignment xs (y:ys)
+alignment _ _           = [(["No sequences to align"], 0)]
 
---pairs each alignment with the corresponding gemonic index
-alignScores :: [SeqData] -> [(SeqData, Int)]
-alignScores = undefined
+test3 :: Test
+test3 = alignment sequences (indexer refSeq) ~?= [(["AGCTG"], 15), (["AGCTG"], 13)]
+
+--pairs each alignment with the corresponding genomic index
+{-alignScores :: [SeqData] ->  [(SeqData, Int)] -> [([String], Int)]
+alignScores (x:xs) (y:ys) = [(align (toStr x) (toStr $ fst y), snd y)] ++ alignScores xs ys
+alignScores _ _ = [(["No sequences to align"], 0)] -}
 

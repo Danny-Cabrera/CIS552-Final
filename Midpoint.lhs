@@ -16,11 +16,15 @@ Briefly (one or two paragraphs max) respond to the following questions...
 
 2.  What have you accomplished so far?
 
-So far we have created a test library for the reference DNA data along with individual DNA "reads". We have been using this for testing our indexing and alignment algorithms, which we have also implemented in a separate module.
+So far we have created a set of test files including a “reference genome” and individual DNA "reads" with the intention of simulating an actual sequencing run where we know the genome of the species whose DNA we are sequencing. We have extended Haskell’s Bio.Sequence library to include the DNA equivalents of String drop and take, and we have also implemented functionality to fragment large sequences into smaller indexed regions, pad sequences, and compute sequence length. We are currently using an existing implementation of Needleman Wunsch algorithm to align the smaller sequences to the larger reference genome.  
+
+We have written some tests and verified that we can correctly align sequences.
 
 3.  Have you run into any unexpected challenges?
 
-Yes - we are currently using the implementation of the Needleman Wunsch alignment algorithm (http://en.wikipedia.org/wiki/Needleman%E2%80%93Wunsch_algorithm) from another source we found online. However, the implementation uses Arrays, which are in the Haskell98 package (and for some reason import Data.Array wasn't working). At this point we think we will just try to re-implement the algorithm ourselves, preferably with a more "Haskell-y" data structure. The algorithm uses dynamic programming and a matrix structure to calculate different "scores" for alignment. Any advice or suggestions as to the best way to approach this implementation would be greatly appreciated. Thanks!
+Yes - we are currently using the implementation of the Needleman Wunsch alignment algorithm (http://en.wikipedia.org/wiki/Needleman%E2%80%93Wunsch_algorithm) from another source we found online. However, the implementation uses Arrays and is not very Haskell-y. At this point we think we will just try to re-implement the algorithm ourselves in order to make the code cleaner and more efficient. The algorithm uses dynamic programming and a matrix structure to calculate different "scores" for alignment. Any advice or suggestions as to the best way to approach this implementation would be greatly appreciated.
+
+Alternatively, we could continue to expand on functionality and build a fully functioning sequence aligner. It would be interesting to compare the performance of our fully functioning aligner against existing C++ implementations.It would be interesting to see where our implementation loses out or outperforms existing implementations. 
 
 4.  Any other comments?
 
