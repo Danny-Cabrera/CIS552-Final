@@ -55,48 +55,43 @@ test2 :: Test
 test2 = align (toStr seq1) (toStr refSeqShort) ~?= ["AGCTG", "GTCGATGGATCGACTAGGCTAGCAT"]
 
 --Macth a read with it's bucket (returns similarity score of sequence with bucket)
-match_read :: SeqData -> [(SeqData, Int)] -> Int -> [(Int,Int)]
---[([String], Int)]
-match_read s (y:ys) curr_bucket = (match (align (toStr s) (toStr $ fst y)) 0, curr_bucket) : (match_read s ys (curr_bucket+1)) where
-                                          match ((a:as):(b:bs):z) acc = 
-                                            if a == b then 
-                                              match (as:bs:z) (acc+1)
-                                            else 
-                                              match (as:bs:z) acc
-                                          match _ acc = acc
-match_read _ _ _ = []
+matchScore :: SeqData -> [(SeqData, Int)] -> Int -> [(Int,Int)]
+matchScore s (y:ys) curr_bucket = (match (align (toStr s) (toStr $ fst y)) 0, curr_bucket) : 
+                                  (matchScore s ys (curr_bucket + 1)) 
+                                  where match ((a:as):(b:bs):z) acc = if a == b 
+                                                                        then match (as:bs:z) (acc+1)
+                                                                     else 
+                                                                        match (as:bs:z) acc
+                                        match _ acc = acc
+matchScore _ _ _ = []
 
 --find max of list of tuples based on first element
-max_fst :: Ord t => [(t, a)] -> (t, a)
-max_fst (x:xs) = maxT x xs
+maxFst :: Ord t => [(t, a)] -> (t, a)
+maxFst (x:xs) = maxT x xs
   where maxT currMax [] = currMax
         maxT (a, b) (p:ps)
           | a < (fst p) = maxT p ps
           | otherwise   = maxT (a, b) ps
-max_fst _     = error "no max on empty list"
+maxFst _     = error "no max on empty list"
 
---  match reads with buckets (takes a list of reads and an indexed reference genome, 
+--  Matches reads with buckets (takes a list of reads and an indexed reference genome, 
 --	returns a list of reads with the bucket it matched to)
-match_reads :: [SeqData]-> [(SeqData, Int)] -> [(SeqData,Int)]
-match_reads (s:ss) r = (s, snd (max_fst (match_read s r 0))): (match_reads ss r)
-match_reads _ _ = []
+matchReads :: [SeqData]-> [(SeqData, Int)] -> [(SeqData,Int)]
+matchReads (s:ss) r = (s, snd (maxFst (matchScore s r 0))): (matchReads ss r)
+matchReads _ _ = []
  
 
 --needs to be implemented
 test3 :: Test
-test3 = match_reads ref_sequences (indexer refSeq) ~?= []
+test3 = matchReads ref_sequences (indexer refSeq) ~?= []
 
 --given a list of reads, align each to reference
-align_reads :: [SeqData] -> SeqData -> [String]
-align_reads xs ref = filter (/= toStr ref) (redun xs ref) where
+alignReads :: [SeqData] -> SeqData -> [String]
+alignReads xs ref = filter (/= toStr ref) (redun xs ref) where
                         redun (l:ls) r = align (toStr l) (toStr r) ++ redun ls r
                         redun _ _      = []
 
 test_align_reads :: Test
-test_align_reads = align_reads ref_sequences refSeq ~?= []
+test_align_reads = alignReads ref_sequences refSeq ~?= []
 
---pairs each alignment with the corresponding genomic index
-{-alignScores :: [SeqData] ->  [(SeqData, Int)] -> [([String], Int)]
-alignScores (x:xs) (y:ys) = [(align (toStr x) (toStr $ fst y), snd y)] ++ alignScores xs ys
-alignScores _ _ = [(["No sequences to align"], 0)] -}
 
