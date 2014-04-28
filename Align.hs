@@ -1,3 +1,4 @@
+--Authors: DANIEL CABRERA <dcabrera>, ALEXANDRA GOLUB <agolub>
 {-# OPTIONS -Wall -fwarn-tabs -fno-warn-type-defaults -XDataKinds #-}
 --implemenation of Needleman-Wunsch algorithm for global alignment
 
@@ -12,7 +13,6 @@ import NeedlemanWunsch
 
 readLength :: Int
 readLength = 25
-
 
 --Make sequence data of length multiple of readLength
 padSeq :: SeqData -> SeqData
@@ -54,18 +54,18 @@ splitRef = indexGenome refSeq [] 0
 test2 :: Test
 test2 = align (toStr seq1) (toStr refSeqShort) ~?= ["AGCTG", "GTCGATGGATCGACTAGGCTAGCAT"]
 
---Macth a read with it's bucket (returns similarity score of sequence with bucket)
+--Match a read with it's bucket (returns similarity score of sequence with bucket)
 matchScore :: SeqData -> [(SeqData, Int)] -> Int -> [(Int,Int)]
 matchScore s (y:ys) curr_bucket = (match (align (toStr s) (toStr $ fst y)) 0, curr_bucket) : 
                                   (matchScore s ys (curr_bucket + 1)) 
                                   where match ((a:as):(b:bs):z) acc = if a == b 
-                                                                        then match (as:bs:z) (acc+1)
+                                                                        then match (as:bs:z) (acc + 1)
                                                                      else 
                                                                         match (as:bs:z) acc
                                         match _ acc = acc
-matchScore _ _ _ = []
+matchScore _ _ _                = []
 
---find max of list of tuples based on first element
+--Find max of list of tuples based on first element
 maxFst :: Ord t => [(t, a)] -> (t, a)
 maxFst (x:xs) = maxT x xs
   where maxT currMax [] = currMax
@@ -76,9 +76,9 @@ maxFst _     = error "no max on empty list"
 
 --  Matches reads with buckets (takes a list of reads and an indexed reference genome, 
 --	returns a list of reads with the bucket it matched to)
-matchReads :: [SeqData]-> [(SeqData, Int)] -> [(SeqData,Int)]
-matchReads (s:ss) r = (s, snd (maxFst (matchScore s r 0))): (matchReads ss r)
-matchReads _ _ = []
+matchReads :: [SeqData] -> [(SeqData, Int)] -> [(SeqData,Int)]
+matchReads (s:ss) r = (s, snd (maxFst $ matchScore s r 0)) : (matchReads ss r)
+matchReads _ _      = []
  
 
 --needs to be implemented
