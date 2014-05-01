@@ -20,15 +20,19 @@ padSeq s = let q = lengthSeq s `mod` readLength in
                    if q == 0 then s else
                     s `appendSeq` (buildSeq $ readLength - q)  
 
+--Append two sequences together
 appendSeq :: SeqData -> SeqData -> SeqData
 appendSeq s1 s2 = fromStr $ toStr s1 ++ toStr s2
 
+--Build more base pairs into a sequence
 buildSeq :: Int -> SeqData
 buildSeq 0 = fromStr ""
 buildSeq n = fromStr "T" `appendSeq` (buildSeq $ n - 1)
 
+--Find the length of a sequence
 lengthSeq :: SeqData -> Int
 lengthSeq s = length (toStr s)
+
 
 indexer :: SeqData -> [(SeqData, Int)]
 indexer s = indexGenome (padSeq s) [] 0
@@ -47,6 +51,7 @@ takeSeq i s = fromStr $ take i (toStr s)
 
 test1 :: Test
 test1 =  indexer refSeq ~?= [(fromStr "TAGCTAGCTAGCTTCAGCTTTTTTT",3),(fromStr "AGTGATGGAAGACTCGAGGGTCTTT",2),(fromStr"GATCGATCGATCTTAAGGTGTGTAT",1),(fromStr "ACTGGTCAAGTTGGCCAATTGGCCA",0)]
+
 splitRef :: [(SeqData, Int)]
 splitRef = indexGenome refSeq [] 0
 
@@ -79,7 +84,6 @@ maxFst _     = error "no max on empty list"
 matchReads :: [SeqData] -> [(SeqData, Int)] -> [(SeqData,Int)]
 matchReads (s:ss) r = (s, snd (maxFst $ matchScore s r 0)) : (matchReads ss r)
 matchReads _ _      = []
- 
 
 --needs to be implemented
 test3 :: Test
