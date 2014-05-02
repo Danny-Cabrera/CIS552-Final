@@ -25,18 +25,33 @@ import Phenotype
 main :: IO () 
 main = 	do 
   putStrLn "Input FASTA file:"
-  file  <- getLine
-  fasta <- readFasta file
+  file     <- getLine
+ -- case return (doesFileExist file) of
+ -- 	 False -> putStrLn "File not found. Please try again."
+ -- 	 True  -> 
+  fasta    <- readFasta file
+  putStrLn "Enter name: "
+  name     <- getLine
   geneFile <- readFasta "phenotypes.fa"
-  refFile <- readFasta "fastaRef.fa"
-  let sequence = map castToNuc fasta :: [Sequence Nuc]
-  let seqs = listify sequence 
-  let genes = map castToNuc geneFile :: [Sequence Nuc]
-  let geneMap = map listToGene genes
+  refFile  <- readFasta "fastaRef.fa"
+  let sequence  = map castToNuc fasta :: [Sequence Nuc]
+  let seqs      = listify sequence 
+  let genes     = map castToNuc geneFile :: [Sequence Nuc]
+  let geneMap   = map listToGene genes
   let reference = map castToNuc refFile :: [Sequence Nuc]
-  let refs = listify reference
-  print $ genProfile (keyGenes (head refs) geneMap)
+  let refs      = listify reference
+  let generated = (generateGenome seqs (head refs))
+  let prof      = genProfile (keyGenes generated geneMap)
+  let out       = makeSeq prof
+  print $ generateScore generated (head refs)
+  writeFasta (name ++ "'s Profile.fa") out
 
+--Create a Sequence from the SeqData for the output FASTA file
+makeSeq :: [((SeqData, SeqData), String)] -> [Sequence a]
+makeSeq (x:xs) = appendHeader (Seq (fst (fst x)) 
+                              (snd (fst x)) 
+                              Nothing) (snd x) : makeSeq xs
+makeSeq _      = [] 
 
 
 --Turn nucleotide sequence into a SeqData list

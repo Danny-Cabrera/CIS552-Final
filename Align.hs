@@ -152,7 +152,7 @@ test5 :: Test
 test5 = (fromIntegral (similarityScore (uniteReads (sortBucket (matchReads mut_sequences (sortBucket (indexer refSeq))))) refSeq)) / (fromIntegral (length (toStr refSeq))) ~?= 0.0
 
 generateGenome :: [SeqData] -> SeqData -> SeqData
-generateGenome dnaReads genome = uniteReads (sortBucket (matchReads dnaReads (sortBucket (indexer genome))))
+generateGenome dnaReads genome = uniteReads (sortBucket (matchReads dnaReads (sortBucket $ indexer genome)))
 
 generateScore :: SeqData -> SeqData -> Float
 generateScore generated reference = (fromIntegral (similarityScore generated reference)) / (fromIntegral (length (toStr reference)))
