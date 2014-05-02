@@ -27,7 +27,7 @@ padSeq s = let q = lengthSeq s `mod` readLength in
 appendSeq :: SeqData -> SeqData -> SeqData
 appendSeq s1 s2 = fromStr $ toStr s1 ++ toStr s2
 
---Build more base pairs into a sequence
+--Add a number of base pairs into a sequence (T's)
 buildSeq :: Int -> SeqData
 buildSeq 0 = fromStr ""
 buildSeq n = fromStr "T" `appendSeq` (buildSeq $ n - 1)
@@ -36,38 +36,33 @@ buildSeq n = fromStr "T" `appendSeq` (buildSeq $ n - 1)
 lengthSeq :: SeqData -> Int
 lengthSeq s = length (toStr s)
 
-
+-- Break genome into buckets of readSize
 indexer :: SeqData -> [(SeqData, Int)]
 indexer s = indexGenome (padSeq s) [] 0
 
+--helper for indexer
 indexGenome :: SeqData -> [(SeqData, Int)] -> Int -> [(SeqData, Int)] 
 indexGenome seqs l index = if lengthSeq seqs == 0 then l else
                           indexGenome (dropSeq readLength seqs) 
                            ((takeSeq readLength seqs, index): l) (index + 1) 
 
-
+--return sufix after i number
 dropSeq :: Int -> SeqData -> SeqData
 dropSeq i s = fromStr $ drop i (toStr s)
 
+--return prefix of length i
 takeSeq :: Int -> SeqData -> SeqData
 takeSeq i s = fromStr $ take i (toStr s)
 
-
+-- test indexing
 test1 :: Test
 test1 =  indexer refSeq ~?= [(fromStr "TAGCTAGCTAGCTTCAGCTTTTTTT",3),
          (fromStr "AGTGATGGAAGACTCGAGGGTCTTT",2),
          (fromStr"GATCGATCGATCTTAAGGTGTGTAT",1),
          (fromStr "ACTGGTCAAGTTGGCCAATTGGCCA",0)]
 
-splitRef :: [(SeqData, Int)]
-splitRef = indexGenome refSeq [] 0
-
---Needleman Wunsch Algorithm for scoring
-test2 :: Test
-test2 = align (toStr seq1) (toStr refSeqShort) ~?= ["AGCTG", 
-                                                    "GTCGATGGATCGACTAGGCTAGCAT"]
-
---Match a read with it's bucket (returns similarity score of sequence with bucket)
+--Match a read with it's bucket using Needleman Wunsch Algorithm for scoring 
+-- (returns similarity score of sequence with bucket)
 matchScore :: SeqData -> [(SeqData, Int)] -> Int -> [(Int,Int)]
 matchScore s (y:ys) curr_bucket = (match (align (toStr s) (toStr $ fst y)) 0, 
                                    curr_bucket) : 
@@ -103,7 +98,7 @@ sortTupleLT (a1, b1) (a2, b2)
   | b1 == b2 = compare (length (toStr a1)) (length (toStr a2))
 sortTupleLT _ _ = error "was not able to sort the tuple"
 
--- sort by bucket
+-- sort by bucket (1....n)
 sortBucket :: [(SeqData, Int)] -> [(SeqData,Int)]
 sortBucket s = sortBy sortTupleLT s
 
@@ -114,19 +109,21 @@ merge xs ys | xs `isInfixOf`  ys = ys
 merge (x:xs) ys                  = x : (merge xs ys)
 merge _ _                        = []
 
--- return new genome given reads with matching buckets (assumes sorted by bucket)
+-- return new genome given reads with matching buckets (assumes sorted by 
+-- bucket)
 uniteReads :: [(SeqData, Int)] -> SeqData
 uniteReads (s1:s2:ss) = uniteReads ((fromStr (merge (toStr (fst s1)) 
                          (toStr (fst s2))), 0):ss)
 uniteReads a = fst (head a)
 
---needs to be implemented
+--test sort
 test3 :: Test
 test3 = sortBucket (matchReads ref_sequences (sortBucket (indexer refSeq))) ~?= 
-         []
-
-test4:: Test
-test4 = uniteReads (sortBucket (matchReads ref_sequences (sortBucket (indexer refSeq)))) ~?= fromStr ("ACTGGTCAAGTTGGCCAATTGGCCAGATCGATCGATCTTAAGGTGTGTATAGTGATGGAAGACTCGAGGGTCTTTTAGCTAGCTAGCTTCAGCT")
+         [(fromStr "ACTGGTCAAGTTGGC",0),(fromStr "TGGCCAATTGGCCAGATC",0),
+         (fromStr "GATCGATCGAT",1), (fromStr "CAGATCGATCGATCTT",1),
+         (fromStr "TCTTAAGGTGTGTATAGT",1),(fromStr "GGAAGACT",2),
+         (fromStr "GACTCGAGGGTCTTT",2),(fromStr "ATAGTGATGGAAGACTC",2),
+         (fromStr "AGCTTCAGCT",3), (fromStr "CTTTTAGCTAGCTAGCTTCAGCT",3)]
 
 --given a list of reads, align each to reference
 alignReads :: [SeqData] -> SeqData -> [String]
@@ -134,25 +131,26 @@ alignReads xs ref = filter (/= toStr ref) (redun xs ref) where
                         redun (l:ls) r = align (toStr l) (toStr r) ++ redun ls r
                         redun _ _      = []
 
-test_align_reads :: Test
-test_align_reads = alignReads ref_sequences refSeq ~?= []
-
+--estimate on accuracy, also used to determine similarit between 2 genomes
 similarityScore :: SeqData -> SeqData -> Int 
 similarityScore s1 s2 =  cmp (align (toStr s1) (toStr s2)) where
                          cmp (f:s:_) = correlation f s 0 where
-                                       correlation (a:as) (b:bs) i = if a == b then
-                                                                      correlation as bs i+1
-                                                                     else
-                                                                      correlation as bs i
-                                       correlation _ _ i = i
-                         cmp _ = error "cannot computer similarity"
+                                       correlation (a:as) (b:bs) i = 
+                                        if a == b then
+                                         correlation as bs i+1
+                                        else
+                                          correlation as bs i
+                                       correlation _ _ i           = i
+                         cmp _       = error "cannot compute similarity"
 
-
-test5 :: Test
-test5 = (fromIntegral (similarityScore (uniteReads (sortBucket (matchReads mut_sequences (sortBucket (indexer refSeq))))) refSeq)) / (fromIntegral (length (toStr refSeq))) ~?= 0.0
-
+-- given reads and reference, generate new genome
 generateGenome :: [SeqData] -> SeqData -> SeqData
-generateGenome dnaReads genome = uniteReads (sortBucket (matchReads dnaReads (sortBucket $ indexer genome)))
+generateGenome dnaReads genome = 
+  uniteReads (sortBucket (matchReads dnaReads (sortBucket $ indexer genome)))
 
+-- given 2 genomes generate their similarity score (use reference for second)
+-- argument when verifying alignments
 generateScore :: SeqData -> SeqData -> Float
-generateScore generated reference = (fromIntegral (similarityScore generated reference)) / (fromIntegral (length (toStr reference)))
+generateScore generated reference = 
+  (fromIntegral (similarityScore generated reference)) / 
+  (fromIntegral (length (toStr reference)))
