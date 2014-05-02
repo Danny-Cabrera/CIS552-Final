@@ -16,7 +16,7 @@ import Test.HUnit
 import Align
 import NeedlemanWunsch
 import Phenotype
-
+import System.Directory
 
 
 {-instance (Error e, MonadIO m) => MonadIO (ErrorT e m) where
@@ -25,10 +25,13 @@ import Phenotype
 main :: IO () 
 main = 	do 
   putStrLn "Input FASTA file:"
-  file     <- getLine
- -- case return (doesFileExist file) of
- -- 	 False -> putStrLn "File not found. Please try again."
- -- 	 True  -> 
+  file  <- getLine
+  do ex <- doesFileExist file
+     if not ex then putStrLn "Invalid file name"
+     else putStrLn "Opening File"
+  -- case return (doesFileExist file) of
+  -- 	 False -> putStrLn "File not found. Please try again."
+  -- 	 True  -> 
   fasta    <- readFasta file
   putStrLn "Enter name: "
   name     <- getLine
