@@ -10,6 +10,7 @@ import Bio.Sequence
 import TestData
 import Test.HUnit
 import NeedlemanWunsch
+import Data.List
 
 readLength :: Int
 readLength = 25
@@ -85,9 +86,38 @@ matchReads :: [SeqData] -> [(SeqData, Int)] -> [(SeqData,Int)]
 matchReads (s:ss) r = (s, snd (maxFst $ matchScore s r 0)) : (matchReads ss r)
 matchReads _ _      = []
 
+-- sort by second element in tuple
+sortTupleLT :: Ord a => (SeqData, a) -> (SeqData, a) -> Ordering
+sortTupleLT (a1, b1) (a2, b2)
+  | b1 < b2 = LT
+  | b1 > b2 = GT
+  | b1 == b2 = compare (length (toStr a1)) (length (toStr a2))
+sortTupleLT _ _ = error "something went wrong"
+
+-- sort by bucket
+sortBucket :: [(SeqData, Int)] -> [(SeqData,Int)]
+sortBucket s = sortBy sortTupleLT s
+
+-- concat 2 strings, overwrite overlaps
+merge :: Eq a => [a] -> [a] -> [a]
+merge xs ys | xs `isPrefixOf` ys = ys
+--merge xs ys | ys `isPrefixOf` xs = xs
+merge xs ys | xs `isInfixOf`  ys = ys
+merge xs ys | ys `isInfixOf`  xs = xs
+merge (x:xs) ys                  = x : (merge xs ys)
+merge _ _                        = []
+
+-- return new genome given reads with matching buckets (assumes sorted by bucket)
+uniteReads :: [(SeqData, Int)] -> SeqData
+uniteReads (s1:s2:ss) = uniteReads ((fromStr (merge (toStr (fst s1)) (toStr (fst s2))), 0):ss)
+uniteReads a = fst (head a)
+
 --needs to be implemented
 test3 :: Test
-test3 = matchReads ref_sequences (indexer refSeq) ~?= []
+test3 = matchReads ref_sequences (sortBucket (indexer refSeq)) ~?= []
+
+test4:: Test
+test4 = uniteReads (sortBucket (matchReads ref_sequences (sortBucket (indexer refSeq)))) ~?= fromStr ("ACTGGTCAAGTTGGCCAATTGGCCAGATCGATCGATCTTAAGGTGTGTATAGTGATGGAAGACTCGAGGGTCTTTTAGCTAGCTAGCTTCAGCT")
 
 --given a list of reads, align each to reference
 alignReads :: [SeqData] -> SeqData -> [String]
